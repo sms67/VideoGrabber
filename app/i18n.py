@@ -3,7 +3,7 @@
 
 STRINGS = {
     "fa": {
-        "app_title": "ویدیوگرابر — دانلود ویدیو از هر سایتی",
+        "app_title": "ویدیوگرابر v1.2 — دانلود ویدیو از هر سایتی",
         "tab_downloads": "صف دانلود",
         "tab_settings": "تنظیمات",
         "url_ph": "لینک ویدیو یا پلی‌لیست رو اینجا بچسبون (YouTube، Instagram، TikTok، ...)",
@@ -13,7 +13,7 @@ STRINGS = {
         "trying_direct": "در حال تحلیل (اتصال مستقیم)…",
         "trying_proxy": "در حال تحلیل از طریق پروکسی {proxy}…",
         "net_error_title": "اتصال برقرار نشد",
-        "net_error_body": "اتصال به سایت ممکن نشد — به احتمال زیاد سایت فیلتره یا اینترنتت محدودیت داره.\n\nراه‌حل:\n۱) یه برنامه فیلترشکن (مثل Oblivion/Warp، Hiddify، v2rayN یا NekoRay) رو نصب و وصل شو.\n۲) برو تب «تنظیمات» → بخش «اتصال و عبور از فیلترینگ» → دکمه «تشخیص خودکار پروکسی» رو بزن.\n۳) برگرد و دوباره «تحلیل و دانلود» رو بزن — برنامه خودش از پروکسی رد می‌شه.\n\nجزئیات فنی:\n{err}",
+        "net_error_body": "اتصال به سایت ممکن نشد — به احتمال زیاد سایت فیلتره یا اینترنتت محدودیت داره.\n\nراه‌حل:\n۱) یه برنامه فیلترشکن (مثل Oblivion/Warp، Hiddify، v2rayN یا NekoRay) رو نصب و وصل شو.\n۲) برو تب «تنظیمات» → بخش «اتصال و عبور از فیلترینگ» → دکمه «عیب‌یابی اتصال» یا «تشخیص خودکار پروکسی» رو بزن.\n۳) برگرد و دوباره «تحلیل و دانلود» رو بزن — برنامه خودش از پروکسی رد می‌شه.\n\nنکته: لینک‌های vmess:// و vless:// رو توی فیلد پروکسی نریز! فقط آدرس پورت محلی فیلترشکن رو وارد کن (مثل socks5://127.0.0.1:10808).\n\nجزئیات فنی:\n{err}",
         "err_auth": "این ویدیو محدودیت سنی یا ورود به حساب می‌خواد.\nراه‌حل: توی مرورگرت به سایت لاگین کن، بعد توی تب تنظیماتِ برنامه کوکی همون مرورگر رو انتخاب و ذخیره کن.\n\nجزئیات فنی:\n{err}",
         "proxy_section": "اتصال و عبور از فیلترینگ",
         "proxy_mode": "حالت اتصال:",
@@ -31,6 +31,29 @@ STRINGS = {
         "conn_direct": "مستقیم",
         "conn_proxy": "پروکسی {proxy}",
         "retry_analyze": "تلاش دوباره",
+        "net_doctor": "عیب‌یابی اتصال",
+        "st_retry": "تلاش مجدد {n}/{m}…",
+        "st_detect": "تشخیص پروکسی…",
+        "proxy_sub": "این یه «لینک اشتراک/کانفیگ» فیلترشکنه (vmess/vless و…) نه پروکسی!\n\nدرستش:\n۱) برنامه فیلترشکن (v2rayN/Hiddify/NekoRay/Oblivion) رو وصل کن.\n۲) آدرس پورت محلی خودش رو وارد کن، مثلاً:\n    socks5://127.0.0.1:10808   یا   http://127.0.0.1:7890\n۳) پورتش رو نمی‌دونی؟ دکمه «تشخیص خودکار پروکسی» خودش پیدا می‌کنه.",
+        "proxy_inv": "آدرس پروکسی قابل قبول نیست.\nیک آدرس مثل socks5://127.0.0.1:10808 یا http://127.0.0.1:7890 وارد کن — یا فیلد رو خالی بذار تا حالت هوشمند خودش پیداش کنه.",
+        "doctor_title": "عیب‌یابی اتصال",
+        "doctor_run": "شروع تست",
+        "doctor_apply": "اعمال این پروکسی و بستن",
+        "doctor_applied": "پروکسی اعمال شد ✓ — حالا «تحلیل و دانلود» رو بزن.",
+        "doctor_step_dns": "۱) ترجمه نام سایت (DNS):",
+        "doctor_step_direct": "۲) اتصال مستقیم به یوتیوب:",
+        "doctor_step_proxy": "۳) اتصال از طریق پروکسی تنظیم‌شده:",
+        "doctor_step_detect": "۴) جستجوی پورت فیلترشکن‌ها:",
+        "doctor_wait": "در حال تست…",
+        "doctor_ok": "برقرار ✓",
+        "doctor_fail": "قطع ✗",
+        "doctor_warn": "مشکوک ⚠",
+        "doctor_none": "—",
+        "doctor_dns_detail": "IP: {ips}",
+        "doctor_dns_poison": "DNS آلوده شده ({ip}) — نشونه فیلترینگ؛ دانلود بدون پروکسی ممکن نیست",
+        "doctor_verdict_proxy": "✅ پروکسی سالم پیدا شد! دکمه «اعمال» رو بزن، بعد «تحلیل و دانلود» — دانلود از همین مسیر انجام می‌شه.",
+        "doctor_verdict_direct": "✅ اتصال مستقیم برقراره. اگه دانلود باز خطا داد، متن خطا رو برام بفرست.",
+        "doctor_verdict_none": "❌ هیچ مسیری باز نیست.\n۱) فیلترشکن (Oblivion / Hiddify / v2rayN / NekoRay) رو وصل کن.\n۲) دوباره «شروع تست» رو بزن.\n۳) اگه وصل بود و بازم نشد، توی تنظیمات فیلترشکن گزینه «Allow LAN / پورت SOCKS» رو فعال کن.",
         "help_html": "<h3>چطور مطمئن بشم دانلود انجام می‌شه؟</h3>"
             "<p>سایت‌هایی مثل یوتیوب توی ایران فیلترن؛ برنامه باید از یک «پروکسی» رد بشه. کافیه یکی از این برنامه‌ها رو نصب و وصل کنی:</p>"
             "<ul>"
@@ -42,7 +65,13 @@ STRINGS = {
             "</ul>"
             "<p>بعدش: تب «تنظیمات» ← دکمه <b>«تشخیص خودکار پروکسی»</b> رو بزن تا برنامه پورتش رو خودش پیدا کنه،</p>"
             "<p>بعد برگرد و <b>«تحلیل و دانلود»</b> رو بزن. تمام!</p>"
-            "<p>اگه آدرس پروکسی رو دستی می‌خوای وارد کنی، این شکلی بنویس: <code>socks5://127.0.0.1:10808</code></p>",
+            "<p>اگه آدرس پروکسی رو دستی می‌خوای وارد کنی، این شکلی بنویس: <code>socks5://127.0.0.1:10808</code></p>"
+            "<p><b>نکته‌های مهم:</b></p>"
+            "<ul>"
+            "<li>لینک‌های <code>vmess://</code> یا <code>vless://</code> رو توی فیلد پروکسی نریز — اونا کانفیگ فیلترشکن‌ان، نه پروکسی. برنامه خودش تشخیص می‌ده و راهنمایی می‌کنه.</li>"
+            "<li>برنامه خودش <code>socks5://</code> رو به <code>socks5h://</code> تبدیل می‌کنه تا DNS از داخل پروکسی ترجمه بشه و آلودگی DNS فیلترینگ کاریش نکنه.</li>"
+            "<li>اگه مطمئن نیستی مشکل چیه، فقط دکمه <b>«عیب‌یابی اتصال»</b> رو بزن — خودش تست می‌کنه و می‌گه مشکل کجاست.</li>"
+            "</ul>",
         "paste": "چسباندن",
         "cancel_selected": "لغو انتخاب‌شده‌ها",
         "retry_selected": "تلاش دوباره",
@@ -111,7 +140,7 @@ STRINGS = {
         "lang_en": "English",
     },
     "en": {
-        "app_title": "VideoGrabber — Download videos from any site",
+        "app_title": "VideoGrabber v1.2 — Download videos from any site",
         "tab_downloads": "Downloads",
         "tab_settings": "Settings",
         "url_ph": "Paste a video or playlist link here (YouTube, Instagram, TikTok, ...)",
@@ -121,7 +150,7 @@ STRINGS = {
         "trying_direct": "Analyzing (direct connection)…",
         "trying_proxy": "Analyzing via proxy {proxy}…",
         "net_error_title": "Connection failed",
-        "net_error_body": "Could not reach the site — it is probably blocked/censored or your network is restricted.\n\nHow to fix:\n1) Connect a VPN/proxy app (Oblivion/Warp, Hiddify, v2rayN, NekoRay, ...).\n2) Go to 'Settings' -> 'Connection' section -> press 'Auto-detect proxy'.\n3) Come back and press 'Analyze & Download' again — the app will route through the proxy.\n\nTechnical details:\n{err}",
+        "net_error_body": "Could not reach the site — it is probably blocked/censored or your network is restricted.\n\nHow to fix:\n1) Connect a VPN/proxy app (Oblivion/Warp, Hiddify, v2rayN, NekoRay, ...).\n2) Go to 'Settings' -> 'Connection' section -> press 'Network Doctor' or 'Auto-detect proxy'.\n3) Come back and press 'Analyze & Download' again — the app will route through the proxy.\n\nNote: do NOT paste vmess://vless:// links into the proxy field! Enter the app's local port instead (e.g. socks5://127.0.0.1:10808).\n\nTechnical details:\n{err}",
         "err_auth": "This video requires login or age verification.\nFix: log in to the site in your browser, then pick that browser's cookies in the app's Settings tab and save.\n\nTechnical details:\n{err}",
         "proxy_section": "Connection / Censorship bypass",
         "proxy_mode": "Connection mode:",
@@ -139,6 +168,29 @@ STRINGS = {
         "conn_direct": "Direct",
         "conn_proxy": "Proxy {proxy}",
         "retry_analyze": "Try again",
+        "net_doctor": "Network doctor",
+        "st_retry": "Retry {n}/{m}…",
+        "st_detect": "Detecting proxy…",
+        "proxy_sub": "This is a VPN subscription/config link (vmess/vless/...) — not a proxy!\n\nWhat to do:\n1) Connect your VPN app (v2rayN/Hiddify/NekoRay/Oblivion).\n2) Enter its local port address, e.g.:\n    socks5://127.0.0.1:10808   or   http://127.0.0.1:7890\n3) Don't know the port? Press 'Auto-detect proxy' and it will find it.",
+        "proxy_inv": "This proxy address is not valid.\nEnter something like socks5://127.0.0.1:10808 or http://127.0.0.1:7890 — or leave the field empty so Smart mode can find it.",
+        "doctor_title": "Network doctor",
+        "doctor_run": "Run tests",
+        "doctor_apply": "Apply this proxy and close",
+        "doctor_applied": "Proxy applied ✓ — now press 'Analyze & Download'.",
+        "doctor_step_dns": "1) DNS resolution:",
+        "doctor_step_direct": "2) Direct connection to YouTube:",
+        "doctor_step_proxy": "3) Connection via configured proxy:",
+        "doctor_step_detect": "4) Scanning VPN-app ports:",
+        "doctor_wait": "Testing…",
+        "doctor_ok": "OK ✓",
+        "doctor_fail": "Blocked ✗",
+        "doctor_warn": "Suspicious ⚠",
+        "doctor_none": "—",
+        "doctor_dns_detail": "IP: {ips}",
+        "doctor_dns_poison": "DNS is poisoned ({ip}) — sign of censorship; downloads are impossible without a proxy",
+        "doctor_verdict_proxy": "✅ A working proxy was found! Press 'Apply', then 'Analyze & Download' — the download will use this route.",
+        "doctor_verdict_direct": "✅ Direct connection works. If downloads still fail, send me the error text.",
+        "doctor_verdict_none": "❌ No route is open.\n1) Connect your VPN app (Oblivion / Hiddify / v2rayN / NekoRay).\n2) Press 'Run tests' again.\n3) If it is connected but still failing, enable 'Allow LAN / SOCKS port' in the VPN app settings.",
         "help_html": "<h3>How to make sure downloads work</h3>"
             "<p>Sites like YouTube are blocked in some regions; the app must route through a proxy. Install and connect one of these apps:</p>"
             "<ul>"
@@ -150,7 +202,13 @@ STRINGS = {
             "</ul>"
             "<p>Then: Settings tab -> press <b>'Auto-detect proxy'</b> so the app finds its port automatically,</p>"
             "<p>then press <b>'Analyze & Download'</b>. Done!</p>"
-            "<p>To enter a proxy manually, use this format: <code>socks5://127.0.0.1:10808</code></p>",
+            "<p>To enter a proxy manually, use this format: <code>socks5://127.0.0.1:10808</code></p>"
+            "<p><b>Important notes:</b></p>"
+            "<ul>"
+            "<li>Do not paste <code>vmess://</code> or <code>vless://</code> links into the proxy field — those are VPN config links, not proxies. The app detects them and guides you.</li>"
+            "<li>The app automatically converts <code>socks5://</code> to <code>socks5h://</code> so DNS is resolved inside the proxy — immune to DNS poisoning.</li>"
+            "<li>Not sure what's wrong? Just press <b>'Network doctor'</b> — it tests everything and tells you.</li>"
+            "</ul>",
         "paste": "Paste",
         "cancel_selected": "Cancel selected",
         "retry_selected": "Retry",

@@ -28,7 +28,18 @@ jobs:
           pip install pyinstaller
 
       - name: Build EXE (takes a few minutes)
-        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name VideoGrabber --collect-all yt_dlp main.py
+        # --collect-all yt_dlp: کل موتور + اکسترکتورها
+        # --collect-all certifi: گواهی‌های SSL (جلوگیری از خطای certificate verify failed)
+        # --hidden-import socks / urllib3.contrib.socks: پشتیبانی پروتکل SOCKS برای پروکسی
+        run: >
+          python -m PyInstaller --noconfirm --clean --onefile --windowed
+          --name VideoGrabber
+          --collect-all yt_dlp
+          --collect-all certifi
+          --collect-all requests
+          --hidden-import socks
+          --hidden-import urllib3.contrib.socks
+          main.py
 
       - name: Download ffmpeg (for MP3 + best quality)
         shell: pwsh

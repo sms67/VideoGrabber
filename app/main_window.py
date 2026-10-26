@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (QComboBox, QFileDialog, QHBoxLayout, QLabel,
 
 from . import settings as cfgmod
 from . import utils
-from .dialogs import PlaylistDialog, ProxyHelpDialog, QualityDialog
+from .dialogs import NetworkDoctorDialog, PlaylistDialog, ProxyHelpDialog, QualityDialog
 from .i18n import tr
 from .worker import AnalyzeWorker, DownloadWorker, ProxyDetectWorker
 
@@ -46,6 +46,7 @@ class Job:
         self.status = "waiting"
         self.path = None
         self.proxy = ""
+        self.last_error = ""
 
 
 class MainWindow(QMainWindow):
@@ -56,6 +57,9 @@ class MainWindow(QMainWindow):
         self._workers = []
         self._an = None
         self._det = None
+        self._det_dl = None
+        self._det_queue = []
+        self._det_dl_running = False
         self._detect_ctx = "analyze"     # "analyze" | "settings"
         self._an_candidates = []         # "" = direct, "@detect" = auto-detect, else proxy URL
         self._an_index = -1
@@ -246,8 +250,11 @@ class MainWindow(QMainWindow):
         proxy_btn_row = QHBoxLayout()
         self.btn_detect = QPushButton(w)
         self.btn_detect.clicked.connect(self._on_detect_proxy)
+        self.btn_doctor = QPushButton(w)
+        self.btn_doctor.clicked.connect(self._open_doctor)
         self.btn_phelp = QPushButton(w)
         self.btn_phelp.clicked.connect(lambda: ProxyHelpDialog(self.cfg["lang"], self).exec())
+        proxy_btn_row.addWidget(self.btn_doctor)
         proxy_btn_row.addWidget(self.btn_detect)
         proxy_btn_row.addWidget(self.btn_phelp)
         proxy_btn_row.addStretch(1)
@@ -311,6 +318,7 @@ class MainWindow(QMainWindow):
         self._lbl_pmode.setText(tr(l, "proxy_mode"))
         self._lbl_purl.setText(tr(l, "proxy_url"))
         self.ed_proxy.setPlaceholderText(tr(l, "proxy_ph"))
+        self.btn_doctor.setText(tr(l, "net_doctor"))
         self.btn_detect.setText(tr(l, "proxy_detect"))
         self.btn_phelp.setText(tr(l, "proxy_help"))
         pmode_labels = {"smart": tr(l, "mode_smart"), "direct": tr(l, "mode_direct"),
@@ -369,12 +377,25 @@ class MainWindow(QMainWindow):
     def _save_settings(self):
         l = self.cfg["lang"]
         old_lang = l
+        # validate + normalize proxy before saving anything
+        raw = self.ed_proxy.text().strip()
+        if raw:
+            p, issue = utils.normalize_proxy(raw)
+            if issue == "subscription":
+                QMessageBox.warning(self, tr(l, "err"), tr(l, "proxy_sub"))
+                return
+            if issue:
+                QMessageBox.warning(self, tr(l, "err"), tr(l, "proxy_inv"))
+                return
+            self.ed_proxy.setText(p)
+            self.cfg["proxy_url"] = p
+        else:
+            self.cfg["proxy_url"] = ""
         self.cfg["download_dir"] = self.ed_dir.text().strip() or self.cfg["download_dir"]
         self.cfg["max_parallel"] = self.spin_parallel.value()
         self.cfg["cookies_browser"] = self.cmb_cookies.currentData() or ""
         self.cfg["playlist_quality"] = self.cmb_plq.currentData() or "best"
         self.cfg["proxy_mode"] = self.cmb_pmode.currentData() or "smart"
-        self.cfg["proxy_url"] = self.ed_proxy.text().strip()
         new_lang = self.cmb_lang.currentData() or "fa"
         self.cfg["lang"] = new_lang
         cfgmod.save(self.cfg)
@@ -401,28 +422,34 @@ class MainWindow(QMainWindow):
             self.ed_url.setText(cb)
 
     def _on_analyze(self):
-        """Smart multi-attempt analysis:
-        1) direct  2) manual proxy (if set)  3) auto-detected local proxies."""
+        """Smart multi-attempt analysis, worst-case first:
+        1) manual proxy (if set — user explicitly wants it)
+        2) direct
+        3) auto-detected local proxy ports."""
         l = self.cfg["lang"]
         url = self.ed_url.text().strip()
         if not url:
             QMessageBox.warning(self, tr(l, "err"), tr(l, "err_no_url"))
+            return
+        mode = self.cfg.get("proxy_mode", "smart")
+        manual, issue = utils.normalize_proxy(self.cfg.get("proxy_url") or "")
+        if issue:
+            QMessageBox.warning(self, tr(l, "err"),
+                                tr(l, "proxy_sub" if issue == "subscription" else "proxy_inv"))
+            self.tabs.setCurrentIndex(1)
             return
         self._last_url = url
         self.btn_analyze.setEnabled(False)
         self._an_errors = []
         self._an_index = -1
 
-        mode = self.cfg.get("proxy_mode", "smart")
-        manual = (self.cfg.get("proxy_url") or "").strip()
         cands = []
-        if mode in ("smart", "direct"):
-            cands.append("")                      # direct first
-        if mode in ("smart", "proxy"):
-            if manual:
-                cands.append(manual)
-            else:
-                cands.append("@detect")           # auto-detect local proxies
+        if mode == "direct":
+            cands = [""]
+        elif mode == "proxy":
+            cands = ([manual] if manual else []) + ["@detect"]
+        else:  # smart
+            cands = ([manual] if manual else []) + [""] + ["@detect"]
         # avoid trying the same thing twice
         seen = set()
         self._an_candidates = [c for c in cands if not (c in seen or seen.add(c))]
@@ -489,12 +516,15 @@ class MainWindow(QMainWindow):
         box.setText(tr(l, "net_error_body").format(err=joined) if cls == "net"
                     else tr(l, "err_analyze") + "\n\n" + joined)
         retry_btn = box.addButton(tr(l, "retry_analyze"), QMessageBox.ButtonRole.ActionRole)
+        doctor_btn = box.addButton(tr(l, "net_doctor"), QMessageBox.ButtonRole.ActionRole)
         help_btn = box.addButton(tr(l, "proxy_help"), QMessageBox.ButtonRole.ActionRole) \
             if cls == "net" else None
         box.addButton(tr(l, "ok"), QMessageBox.ButtonRole.RejectRole)
         box.exec()
         if box.clickedButton() is retry_btn:
             self._on_analyze()
+        elif box.clickedButton() is doctor_btn:
+            self._open_doctor()
         elif help_btn is not None and box.clickedButton() is help_btn:
             ProxyHelpDialog(l, self).exec()
 
@@ -596,6 +626,17 @@ class MainWindow(QMainWindow):
                 slots -= 1
 
     def _start(self, job: Job):
+        if job.proxy == "@detect":
+            # self-healing download: find a local proxy port first, then start
+            self._det_queue.append(job)
+            self._set_status(job, "starting")
+            r = self._row_of(job)
+            if r >= 0:
+                st = self.table.item(r, COL_STATUS)
+                if st:
+                    st.setText(tr(self.cfg["lang"], "st_detect"))
+            self._drain_detect_queue()
+            return
         self._set_status(job, "starting")
         w = DownloadWorker(job.url, job.quality, self.cfg["download_dir"],
                            self.cfg.get("cookies_browser", ""),
@@ -605,9 +646,38 @@ class MainWindow(QMainWindow):
         w.ok.connect(lambda p, jb=job: self._on_ok(jb, p))
         w.failed.connect(lambda m, jb=job: self._on_failed(jb, m))
         w.canceled.connect(lambda jb=job: self._on_canceled(jb))
+        w.attempt.connect(lambda n, m, jb=job: self._on_attempt(jb, n, m))
         w.finished.connect(lambda jb=job: self._worker_finished(jb))
         self._workers.append(w)
         w.start()
+
+    def _drain_detect_queue(self):
+        if self._det_dl_running or not self._det_queue:
+            return
+        job = self._det_queue.pop(0)
+        self._det_dl_running = True
+        self._det_dl = ProxyDetectWorker()
+        self._det_dl.done.connect(lambda proxies, jb=job: self._on_dl_detected(jb, proxies))
+        self._det_dl.start()
+
+    def _on_dl_detected(self, job: Job, proxies: list):
+        self._det_dl_running = False
+        if job in self._jobs and job.status not in FINISHED_STATES:
+            if not proxies:
+                self.statusBar().showMessage(tr(self.cfg["lang"], "proxy_not_found"), 5000)
+            job.proxy = proxies[0] if proxies else ""   # worst case: try direct
+            if job.proxy:
+                self.ed_proxy.setText(job.proxy)        # remember for the user
+            self._start(job)
+        self._drain_detect_queue()
+
+    def _on_attempt(self, job: Job, n: int, m: int):
+        r = self._row_of(job)
+        if r < 0 or job.status in FINISHED_STATES:
+            return
+        st = self.table.item(r, COL_STATUS)
+        if st:
+            st.setText(tr(self.cfg["lang"], "st_retry").format(n=n, m=m))
 
     def _worker_finished(self, job: Job):
         if job.worker in self._workers:
@@ -672,6 +742,7 @@ class MainWindow(QMainWindow):
                 st.setToolTip(path)
 
     def _on_failed(self, job: Job, msg: str):
+        job.last_error = msg or ""
         self._set_status(job, "error")
         r = self._row_of(job)
         if r >= 0:
@@ -722,6 +793,12 @@ class MainWindow(QMainWindow):
         for job in jobs:
             if job.status not in FINISHED_STATES:
                 continue
+            # self-heal: if it died on the network and no proxy was used,
+            # re-route through an auto-detected local proxy
+            if job.status == "error" and not job.proxy \
+                    and utils.error_is_network(job.last_error) \
+                    and self.cfg.get("proxy_mode", "smart") != "direct":
+                job.proxy = "@detect"
             r = self._row_of(job)
             if r >= 0:
                 bar = self.table.cellWidget(r, COL_PROGRESS)
@@ -771,6 +848,23 @@ class MainWindow(QMainWindow):
         QDesktopServices.openUrl(QUrl.fromLocalFile(d))
 
     # ================= misc =================
+    def _open_doctor(self):
+        l = self.cfg["lang"]
+        dlg = NetworkDoctorDialog(l, self.ed_proxy.text().strip(), self)
+        dlg.exec()
+        if dlg.chosen_proxy:
+            self.ed_proxy.setText(dlg.chosen_proxy)
+            self.cfg["proxy_url"] = dlg.chosen_proxy
+            if self.cmb_pmode.currentData() in (None, "direct"):
+                for k in range(self.cmb_pmode.count()):
+                    if self.cmb_pmode.itemData(k) == "smart":
+                        self.cmb_pmode.setCurrentIndex(k)
+                        break
+            cfgmod.save(self.cfg)
+            self._current_proxy = dlg.chosen_proxy
+            self._update_conn_label()
+            self.statusBar().showMessage(tr(l, "doctor_applied"), 6000)
+
     def _on_detect_proxy(self):
         l = self.cfg["lang"]
         self.btn_detect.setEnabled(False)
@@ -832,6 +926,7 @@ class MainWindow(QMainWindow):
                 event.ignore()
                 return
         self._closing = True
+        self._det_queue = []
         for j in self._jobs:
             if j.worker and j.worker.isRunning():
                 j.worker.cancel()
@@ -841,4 +936,6 @@ class MainWindow(QMainWindow):
             self._an.wait(2000)
         if self._det and self._det.isRunning():
             self._det.wait(4000)
+        if self._det_dl and self._det_dl.isRunning():
+            self._det_dl.wait(4000)
         event.accept()

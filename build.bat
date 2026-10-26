@@ -26,7 +26,7 @@ python -m pip install pyinstaller
 if errorlevel 1 ( echo [X] Failed to install PyInstaller. & pause & exit /b 1 )
 
 echo [3/3] Building EXE - please wait...
-python -m PyInstaller --noconfirm --clean --onefile --windowed --name VideoGrabber --collect-all yt_dlp main.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --name VideoGrabber --collect-all yt_dlp --collect-all certifi --collect-all requests --hidden-import socks --hidden-import urllib3.contrib.socks main.py
 if errorlevel 1 (
     echo [X] Build failed. Read the messages above.
     pause
